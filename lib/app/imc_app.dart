@@ -1,6 +1,5 @@
-import 'package:demo6/routes/home/home_route.dart';
-import 'package:demo6/routes/menu/menu_route.dart';
 import 'package:flutter/material.dart';
+import '../routes/accueil/accueil_route.dart';
 
 class ImcApp extends StatelessWidget {
   const ImcApp({super.key});
@@ -8,13 +7,13 @@ class ImcApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'IMC Calculator Ultra Pro Max+',
+      title: 'F1',
       theme: ThemeData(
         appBarTheme: AppBarTheme(
           color: Colors.blueAccent
         )
       ),
-      home: const MenuRoute(),
+      home: const AccueilRoute(),
     );
   }
 }
