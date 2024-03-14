@@ -11,9 +11,9 @@ class HomeRoute extends StatelessWidget {
       appBar: AppBar(
         title: const Text(
           "F1 Présentation",
-          style: TextStyle(color: Colors.white), // Définir la couleur du texte en blanc
+          style: TextStyle(color: Colors.white),
         ),
-        backgroundColor: Colors.red, // Définir la couleur de l'AppBar en rouge
+        backgroundColor: Colors.red,
       ),
       body: const HomeRouteBody(),
     );
