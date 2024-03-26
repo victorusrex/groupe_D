@@ -86,7 +86,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
             itemBuilder: (context, index) {
               final session = sessions[index];
               return ListTile(
-                title: Text(session.countryName),
+                title: Text('${session.countryName} - ${session.sessionName}'), // Ajout du pays du grand prix
               );
             },
           );
@@ -98,14 +98,17 @@ class _CalendarWidgetState extends State<CalendarWidget> {
 
 class Session {
   final String countryName;
+  final String? sessionName;
 
   Session({
     required this.countryName,
+    this.sessionName,
   });
 
   factory Session.fromJson(Map<String, dynamic> json) {
     return Session(
       countryName: json['country_name'],
+      sessionName: json['circuit_short_name'],
     );
   }
 }

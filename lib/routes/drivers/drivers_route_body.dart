@@ -26,6 +26,9 @@ class _DriversRouteBodyState extends State<DriversRouteBody> {
             itemBuilder: (context, index) {
               final driver = drivers[index];
               return ListTile(
+                leading: CircleAvatar(
+                  backgroundImage: NetworkImage(driver.imageURL ?? ''), // Utilisation de l'opérateur de nullabilité pour gérer le cas où l'URL est nulle
+                ),
                 title: Text('${driver.firstName} ${driver.lastName}'),
               );
             },
@@ -51,16 +54,19 @@ class _DriversRouteBodyState extends State<DriversRouteBody> {
 class Driver {
   final String firstName;
   final String lastName;
+  final String? imageURL;
 
   Driver({
     required this.firstName,
     required this.lastName,
+    this.imageURL,
   });
 
   factory Driver.fromJson(Map<String, dynamic> json) {
     return Driver(
       firstName: json['first_name'],
       lastName: json['last_name'],
+      imageURL: json['headshot_url'],
     );
   }
 }
