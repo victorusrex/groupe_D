@@ -1,8 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-
-import '../home/home_route.dart';
-
-
+import 'package:http/http.dart' as http;
 
 class DriversRouteBody extends StatefulWidget {
   const DriversRouteBody({Key? key}) : super(key: key);
@@ -12,56 +10,57 @@ class DriversRouteBody extends StatefulWidget {
 }
 
 class _DriversRouteBodyState extends State<DriversRouteBody> {
-  int _selectedIndex = 0;
-
-  static const List<Widget> _widgetOptions = <Widget>[
-    Text(
-      'Calendar',
-      style: TextStyle(fontSize: 24),
-    ),
-    Text(
-      'Drivers',
-      style: TextStyle(fontSize: 24),
-    ),
-  ];
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: _widgetOptions.elementAt(_selectedIndex),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today),
-            label: 'Calendar',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.people),
-            label: 'Drivers',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: _selectedIndex == 1 ? Colors.blue : null,
-        onTap: _onItemTapped,
-      ),
+    return FutureBuilder<List<Driver>>(
+      future: fetchDrivers(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        } else {
+          final drivers = snapshot.data!;
+          return ListView.builder(
+            itemCount: drivers.length,
+            itemBuilder: (context, index) {
+              final driver = drivers[index];
+              return ListTile(
+                title: Text('${driver.firstName} ${driver.lastName}'),
+              );
+            },
+          );
+        }
+      },
     );
   }
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-      if (_selectedIndex == 0) {
-        _goToCalendar(context);
-      }
-    });
-  }
+  Future<List<Driver>> fetchDrivers() async {
+    final response = await http.get(Uri.parse(
+        'https://api.openf1.org/v1/drivers?session_key=9158'));
 
-  void _goToCalendar(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const HomeRoute()),
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      return data.map((e) => Driver.fromJson(e)).toList();
+    } else {
+      throw Exception('Failed to load drivers');
+    }
+  }
+}
+
+class Driver {
+  final String firstName;
+  final String lastName;
+
+  Driver({
+    required this.firstName,
+    required this.lastName,
+  });
+
+  factory Driver.fromJson(Map<String, dynamic> json) {
+    return Driver(
+      firstName: json['first_name'],
+      lastName: json['last_name'],
     );
   }
 }

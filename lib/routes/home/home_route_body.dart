@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import '../drivers/drivers_route_body.dart';
 
 class HomeRouteBody extends StatefulWidget {
   const HomeRouteBody({Key? key}) : super(key: key);
@@ -12,19 +13,11 @@ class HomeRouteBody extends StatefulWidget {
 class _HomeRouteBodyState extends State<HomeRouteBody> {
   int _selectedIndex = 0;
 
-  late Future<List<Driver>> _futureDrivers;
-
-  @override
-  void initState() {
-    super.initState();
-    _futureDrivers = fetchDrivers();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: _selectedIndex == 0 ? CalendarWidget() : DriversWidget(futureDrivers: _futureDrivers),
+        child: _selectedIndex == 0 ? CalendarWidget() : DriversRouteBody(),
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
@@ -49,64 +42,51 @@ class _HomeRouteBodyState extends State<HomeRouteBody> {
       _selectedIndex = index;
     });
   }
+}
 
-  Future<List<Driver>> fetchDrivers() async {
+class CalendarWidget extends StatefulWidget {
+  @override
+  _CalendarWidgetState createState() => _CalendarWidgetState();
+}
+
+class _CalendarWidgetState extends State<CalendarWidget> {
+  late Future<List<Session>> _futureSessions;
+
+  @override
+  void initState() {
+    super.initState();
+    _futureSessions = fetchSessions();
+  }
+
+  Future<List<Session>> fetchSessions() async {
     final response = await http.get(Uri.parse(
-        'https://api.openf1.org/v1/drivers?session_key=9158'));
+        'https://api.openf1.org/v1/meetings?year=2023'));
 
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);
-      return data.take(20).map((e) => Driver.fromJson(e)).toList();
+      return data.map((e) => Session.fromJson(e)).toList();
     } else {
-      throw Exception('Failed to load drivers');
+      throw Exception('Failed to load sessions');
     }
   }
-}
-
-class CalendarWidget extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          'Calendar',
-          style: TextStyle(fontSize: 24),
-        ),
-        SizedBox(height: 20),
-        Text(
-          'Texte 2',
-          style: TextStyle(fontSize: 24),
-        ),
-        SizedBox(height: 20),
-        YourButton(text: 'Quitter 1'),
-      ],
-    );
-  }
-}
-
-class DriversWidget extends StatelessWidget {
-  final Future<List<Driver>> futureDrivers;
-
-  const DriversWidget({required this.futureDrivers});
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<Driver>>(
-      future: futureDrivers,
+    return FutureBuilder<List<Session>>(
+      future: _futureSessions,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());
         } else if (snapshot.hasError) {
           return Center(child: Text('Error: ${snapshot.error}'));
         } else {
-          final drivers = snapshot.data!;
+          final sessions = snapshot.data!;
           return ListView.builder(
-            itemCount: drivers.length,
+            itemCount: sessions.length,
             itemBuilder: (context, index) {
-              final driver = drivers[index];
+              final session = sessions[index];
               return ListTile(
-                title: Text('${driver.firstName} ${driver.lastName}'),
+                title: Text(session.countryName),
               );
             },
           );
@@ -116,34 +96,16 @@ class DriversWidget extends StatelessWidget {
   }
 }
 
-class YourButton extends StatelessWidget {
-  final String text;
-  const YourButton({Key? key, required this.text}) : super(key: key);
+class Session {
+  final String countryName;
 
-  @override
-  Widget build(BuildContext context) {
-    return ElevatedButton(
-      onPressed: () {
-        Navigator.pop(context);
-      },
-      child: Text(text),
-    );
-  }
-}
-
-class Driver {
-  final String firstName;
-  final String lastName;
-
-  Driver({
-    required this.firstName,
-    required this.lastName,
+  Session({
+    required this.countryName,
   });
 
-  factory Driver.fromJson(Map<String, dynamic> json) {
-    return Driver(
-      firstName: json['first_name'],
-      lastName: json['last_name'],
+  factory Session.fromJson(Map<String, dynamic> json) {
+    return Session(
+      countryName: json['country_name'],
     );
   }
 }
