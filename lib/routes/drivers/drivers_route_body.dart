@@ -26,8 +26,16 @@ class _DriversRouteBodyState extends State<DriversRouteBody> {
             itemBuilder: (context, index) {
               final driver = drivers[index];
               return ListTile(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DriverDetailPage(driver: driver, showDriverNumber: true),
+                    ),
+                  );
+                },
                 leading: CircleAvatar(
-                  backgroundImage: NetworkImage(driver.imageURL ?? ''), // Utilisation de l'opérateur de nullabilité pour gérer le cas où l'URL est nulle
+                  backgroundImage: NetworkImage(driver.imageURL ?? ''),
                 ),
                 title: Text('${driver.firstName} ${driver.lastName}'),
               );
@@ -55,10 +63,14 @@ class Driver {
   final String firstName;
   final String lastName;
   final String? imageURL;
+  final int driverNumber;
+  final String teamName;
 
   Driver({
     required this.firstName,
     required this.lastName,
+    required this.driverNumber,
+    required this.teamName,
     this.imageURL,
   });
 
@@ -66,7 +78,43 @@ class Driver {
     return Driver(
       firstName: json['first_name'],
       lastName: json['last_name'],
+      driverNumber: json['driver_number'],
+      teamName: json['team_name'],
       imageURL: json['headshot_url'],
+    );
+  }
+}
+
+class DriverDetailPage extends StatelessWidget {
+  final Driver driver;
+  final bool showDriverNumber;
+
+  const DriverDetailPage({Key? key, required this.driver, required this.showDriverNumber}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.red, // Couleur de la barre d'applications en rouge
+        title: Text('${driver.firstName} ${driver.lastName}'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircleAvatar(
+              backgroundImage: NetworkImage(driver.imageURL ?? ''),
+              radius: 50,
+            ),
+            SizedBox(height: 20),
+            Text('Nom : ${driver.lastName}'),
+            Text('Prénom : ${driver.firstName}'),
+            if (showDriverNumber)
+              Text('Numéro du pilote : ${driver.driverNumber}'),
+            Text("Nom de l'écurie : ${driver.teamName}") // Ajout du nom de l'écurie
+          ],
+        ),
+      ),
     );
   }
 }

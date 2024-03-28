@@ -51,6 +51,9 @@ class CalendarWidget extends StatefulWidget {
 
 class _CalendarWidgetState extends State<CalendarWidget> {
   late Future<List<Session>> _futureSessions;
+  final TextEditingController _countryController = TextEditingController();
+  final TextEditingController _circuitController = TextEditingController();
+  List<Session> _sessions = [];
 
   @override
   void initState() {
@@ -80,19 +83,70 @@ class _CalendarWidgetState extends State<CalendarWidget> {
         } else if (snapshot.hasError) {
           return Center(child: Text('Error: ${snapshot.error}'));
         } else {
-          final sessions = snapshot.data!;
-          return ListView.builder(
-            itemCount: sessions.length,
-            itemBuilder: (context, index) {
-              final session = sessions[index];
-              return ListTile(
-                title: Text('${session.countryName} - ${session.sessionName}'), // Ajout du pays du grand prix
-              );
-            },
+          _sessions = snapshot.data!;
+          return Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  itemCount: _sessions.length,
+                  itemBuilder: (context, index) {
+                    final session = _sessions[index];
+                    return ListTile(
+                      title: Text('${session.countryName} - ${session.sessionName}'),
+                    );
+                  },
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  _showInsertForm(context);
+                },
+                child: Text('Insérer'),
+              ),
+            ],
           );
         }
       },
     );
+  }
+
+  void _showInsertForm(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Insérer un nouveau circuit'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              TextField(
+                controller: _countryController,
+                decoration: InputDecoration(labelText: 'Pays'),
+              ),
+              TextField(
+                controller: _circuitController,
+                decoration: InputDecoration(labelText: 'Nom du circuit'),
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _insertSession(_countryController.text, _circuitController.text);
+              },
+              child: Text('Insérer'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _insertSession(String countryName, String circuitName) {
+    setState(() {
+      _sessions.add(Session(countryName: countryName, sessionName: circuitName));
+    });
   }
 }
 
