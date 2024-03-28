@@ -10,36 +10,62 @@ class DriversRouteBody extends StatefulWidget {
 }
 
 class _DriversRouteBodyState extends State<DriversRouteBody> {
+  late Future<List<Driver>> _futureDrivers;
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _driverNumberController = TextEditingController();
+  final TextEditingController _teamNameController = TextEditingController();
+
+  List<Driver> drivers = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _futureDrivers = fetchDrivers();
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<Driver>>(
-      future: fetchDrivers(),
+      future: _futureDrivers,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         } else if (snapshot.hasError) {
           return Center(child: Text('Error: ${snapshot.error}'));
         } else {
-          final drivers = snapshot.data!;
-          return ListView.builder(
-            itemCount: drivers.length,
-            itemBuilder: (context, index) {
-              final driver = drivers[index];
-              return ListTile(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => DriverDetailPage(driver: driver, showDriverNumber: true),
-                    ),
-                  );
-                },
-                leading: CircleAvatar(
-                  backgroundImage: NetworkImage(driver.imageURL ?? ''),
+          drivers = snapshot.data!;
+          return Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  itemCount: drivers.length,
+                  itemBuilder: (context, index) {
+                    final driver = drivers[index];
+                    return ListTile(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DriverDetailPage(driver: driver, showDriverNumber: true),
+                          ),
+                        );
+                      },
+                      leading: CircleAvatar(
+                        backgroundImage: NetworkImage(driver.imageURL ?? ''),
+                      ),
+                      title: Text('${driver.firstName} ${driver.lastName}'),
+                    );
+                  },
                 ),
-                title: Text('${driver.firstName} ${driver.lastName}'),
-              );
-            },
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  _showInsertForm(context);
+                },
+                child: Text('Insérer pilote'),
+              ),
+            ],
           );
         }
       },
@@ -56,6 +82,66 @@ class _DriversRouteBodyState extends State<DriversRouteBody> {
     } else {
       throw Exception('Failed to load drivers');
     }
+  }
+
+  void _showInsertForm(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Insérer un nouveau pilote'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              TextField(
+                controller: _firstNameController,
+                decoration: InputDecoration(labelText: 'Prénom'),
+              ),
+              TextField(
+                controller: _lastNameController,
+                decoration: InputDecoration(labelText: 'Nom'),
+              ),
+              TextField(
+                controller: _driverNumberController,
+                decoration: InputDecoration(labelText: 'Numéro de pilote'),
+                keyboardType: TextInputType.number,
+              ),
+              TextField(
+                controller: _teamNameController,
+                decoration: InputDecoration(labelText: 'Écurie'),
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                _insertDriver(
+                  _firstNameController.text,
+                  _lastNameController.text,
+                  int.parse(_driverNumberController.text),
+                  _teamNameController.text,
+                );
+              },
+              child: Text('Insérer'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _insertDriver(String firstName, String lastName, int driverNumber, String teamName) {
+    setState(() {
+      final newDriver = Driver(
+        firstName: firstName,
+        lastName: lastName,
+        driverNumber: driverNumber,
+        teamName: teamName,
+        imageURL: '', // Vous pouvez définir une URL d'image par défaut si nécessaire
+      );
+      drivers.add(newDriver); // Ajoutez le nouveau pilote à la liste existante
+    });
   }
 }
 

@@ -53,6 +53,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
   late Future<List<Session>> _futureSessions;
   final TextEditingController _countryController = TextEditingController();
   final TextEditingController _circuitController = TextEditingController();
+  final TextEditingController _raceTypeController = TextEditingController(); // Ajout du contrôleur pour le type de course
   List<Session> _sessions = [];
 
   @override
@@ -63,7 +64,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
 
   Future<List<Session>> fetchSessions() async {
     final response = await http.get(Uri.parse(
-        'https://api.openf1.org/v1/meetings?year=2023'));
+        'https://api.openf1.org/v1/sessions?session_type=Race&session_type=Race&year=2023'));
 
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);
@@ -92,7 +93,15 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                   itemBuilder: (context, index) {
                     final session = _sessions[index];
                     return ListTile(
-                      title: Text('${session.countryName} - ${session.sessionName}'),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CalendarDetailPage(session: session),
+                          ),
+                        );
+                      },
+                      title: Text('${session.countryName} - ${session.sessionName ?? ''}'),
                     );
                   },
                 ),
@@ -127,13 +136,17 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                 controller: _circuitController,
                 decoration: InputDecoration(labelText: 'Nom du circuit'),
               ),
+              TextField(
+                controller: _raceTypeController,
+                decoration: InputDecoration(labelText: 'Type de course'), // Ajout du champ pour le type de course
+              ),
             ],
           ),
           actions: <Widget>[
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                _insertSession(_countryController.text, _circuitController.text);
+                _insertSession(_countryController.text, _circuitController.text, _raceTypeController.text); // Ajout du paramètre pour le type de course
               },
               child: Text('Insérer'),
             ),
@@ -143,9 +156,9 @@ class _CalendarWidgetState extends State<CalendarWidget> {
     );
   }
 
-  void _insertSession(String countryName, String circuitName) {
+  void _insertSession(String countryName, String circuitName, String raceType) { // Ajout du paramètre pour le type de course
     setState(() {
-      _sessions.add(Session(countryName: countryName, sessionName: circuitName));
+      _sessions.add(Session(countryName: countryName, sessionName: circuitName, raceType: raceType)); // Correction : Utilisation de raceType
     });
   }
 }
@@ -153,16 +166,51 @@ class _CalendarWidgetState extends State<CalendarWidget> {
 class Session {
   final String countryName;
   final String? sessionName;
+  final String raceType;
 
   Session({
     required this.countryName,
     this.sessionName,
+    required this.raceType,
   });
 
   factory Session.fromJson(Map<String, dynamic> json) {
     return Session(
       countryName: json['country_name'],
       sessionName: json['circuit_short_name'],
+      raceType: json['session_name'] ?? 'Type inconnu',
     );
   }
+}
+
+class CalendarDetailPage extends StatelessWidget {
+  final Session session;
+
+  const CalendarDetailPage({Key? key, required this.session}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.red,
+        title: Text(session.sessionName ?? ''),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Nom du circuit : ${session.sessionName}'),
+            Text('Pays : ${session.countryName}'),
+            Text('Type de la course : ${session.raceType}'),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+void main() {
+  runApp(MaterialApp(
+    home: HomeRouteBody(),
+  ));
 }
