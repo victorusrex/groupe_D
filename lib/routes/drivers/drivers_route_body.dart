@@ -54,7 +54,10 @@ class _DriversRouteBodyState extends State<DriversRouteBody> {
                       leading: CircleAvatar(
                         backgroundImage: NetworkImage(driver.imageURL ?? ''),
                       ),
-                      title: Text('${driver.firstName} ${driver.lastName}'),
+                      title: Center(child: Text(
+                        '${driver.firstName} ${driver.lastName}',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      )),
                     );
                   },
                 ),
@@ -193,11 +196,11 @@ class DriverDetailPage extends StatelessWidget {
               radius: 50,
             ),
             SizedBox(height: 20),
-            Text('Nom : ${driver.lastName}'),
-            Text('Prénom : ${driver.firstName}'),
+            Text('Nom : ${driver.lastName}', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text('Prénom : ${driver.firstName}', style: TextStyle(fontWeight: FontWeight.bold)),
             if (showDriverNumber)
-              Text('Numéro du pilote : ${driver.driverNumber}'),
-            Text("Nom de l'écurie : ${driver.teamName}") // Ajout du nom de l'écurie
+              Text('Numéro du pilote : ${driver.driverNumber}', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text("Nom de l'écurie : ${driver.teamName}", style: TextStyle(fontWeight: FontWeight.bold)) // Ajout du nom de l'écurie
           ],
         ),
       ),
