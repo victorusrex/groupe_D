@@ -10,7 +10,7 @@ class HomeRoute extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "F1 Présentation",
+          "F1 Pulse",
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.red,
