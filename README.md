@@ -1,6 +1,9 @@
-# demo6
+# Groupe D / Fournier Victor TPA et Canva Baptiste TPA
 
-A new Flutter project.
+projet f1
+dire fonctionnalités présentes 
+dire qu'il manque bdd
+dire pour probleme git (communication sur discord)
 
 ## Getting Started
 
