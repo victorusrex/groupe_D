@@ -88,3 +88,5 @@ CANVA Baptiste & FOURNIER Victor \
 \
 *Étudiants en BUT Informatique 2ème année à l'IUT du Littoral de la Côte d'Opale*
 
+*Juin 2024*
+
