@@ -1,6 +1,7 @@
 # Groupe D / Fournier Victor TPA et Canva Baptiste TPA
 
-projet f1
+TP mobile
+sujet -> f1
 dire fonctionnalités présentes 
 dire qu'il manque bdd
 dire pour probleme git (communication sur discord)
